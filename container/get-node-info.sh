@@ -22,17 +22,23 @@ ver=$(./get-version.sh)
 type="ULEAD_MN"
 mn_status=$(/home/ulead/ulead-cli -rpcuser=healthcheck -rpcpassword=healthcheck getmasternodestatus | jq .message)
 hash=$(cat ./node.hash)
+block_count="$(/home/ulead/ulead-cli getblockchaininfo | jq .blocks)"
+sync_status="$(/home/ulead/ulead-cli mnsync status | jq .IsBlockchainSynced)"
 
 printf "\
 TYPE: %s \n\
 VERSION: %s \n\
 MN_STATUS: %s \n\
 HASH: %s \n\
-" "$type" "$ver" "$mn_status" "$hash" > /home/ulead/.ulead/node.info
+BLOCKS: %s \n\
+SYNCED: %s \n\
+" "$type" "$ver" "$mn_status" "$hash" "$block_count" "$sync_status"> /home/ulead/.ulead/node.info
 
 printf "\
 TYPE: %s \n\
 VERSION: %s \n\
 MN_STATUS: %s \n\
 HASH: %s \n\
-" "$type" "$ver" "$mn_status" "$hash"
+BLOCKS: %s \n\
+SYNCED: %s \n\
+" "$type" "$ver" "$mn_status" "$hash" "$block_count" "$sync_status"

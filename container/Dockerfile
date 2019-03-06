@@ -22,12 +22,10 @@ FROM ubuntu:bionic
 RUN apt-get update && apt-get upgrade -q -y
 RUN apt-get install wget curl libjemalloc1 unzip jq -y
 
-HEALTHCHECK --interval=5s --timeout=3s --start-period=30s --retries=5 \
-  CMD curl -X POST --user "healthcheck:healthcheck" --url http://localhost:10000 \
-                                        --header 'Cache-Control: no-cache' \
-                                        --header 'Content-Type: application/json' \
-                                        --data '{"jsonrpc":"2.0","id":"healthcheck","method":"getblockchaininfo","params":[]}' \
-                                        --silent -k --fail || exit 1
+ADD healthcheck.sh /healthcheck.sh
+RUN chmod +x /healthcheck.sh
+HEALTHCHECK --interval=10s --timeout=30s --start-period=30s --retries=3 \
+  CMD /healthcheck.sh
 
 # create user
 RUN adduser --disabled-login \

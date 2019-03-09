@@ -20,25 +20,40 @@
 
 ver=$(./get-version.sh)
 type="ULEAD_MN"
-mn_status=$(/home/ulead/ulead-cli -rpcuser=healthcheck -rpcpassword=healthcheck getmasternodestatus | jq .message)
+mn_status=$(/home/ulead/ulead-cli getmasternodestatus 2>&1)
+if printf "%s" "$mn_status" | grep "error:"; then 
+    mn_status=$(printf "%s" "$mn_status" | sed 's\error: \\g' | jq .message)
+else 
+    mn_status=$(printf "%s" "$mn_status" | jq .message)
+fi
 hash=$(cat ./node.hash)
-block_count="$(/home/ulead/ulead-cli getblockchaininfo | jq .blocks)"
-sync_status="$(/home/ulead/ulead-cli mnsync status | jq .IsBlockchainSynced)"
+block_count="$(/home/ulead/ulead-cli getblockchaininfo 2>&1)"
+if printf "%s" "$block_count" | grep "error:"; then 
+    block_count=$(printf "%s" "$block_count" | sed 's\error: \\g' | jq .message)   
+else 
+    block_count="$(printf "%s" "$block_count" | jq .blocks)"
+fi
+sync_status="$(/home/ulead/ulead-cli mnsync status 2>&1)"
+if printf "%s" "$sync_status" | grep "error:"; then 
+    sync_status=$(printf "%s" "$sync_status" | sed 's\error: \\g' | jq .message) 
+else 
+    sync_status="$(printf "%s" "$sync_status" | jq .IsBlockchainSynced)"
+fi
 
 printf "\
-TYPE: %s \n\
-VERSION: %s \n\
-MN_STATUS: %s \n\
-HASH: %s \n\
-BLOCKS: %s \n\
-SYNCED: %s \n\
+TYPE: %s
+VERSION: %s
+MN STATUS: %s
+HASH: %s
+BLOCKS: %s
+SYNCED: %s
 " "$type" "$ver" "$mn_status" "$hash" "$block_count" "$sync_status"> /home/ulead/.ulead/node.info
 
 printf "\
-TYPE: %s \n\
-VERSION: %s \n\
-MN_STATUS: %s \n\
-HASH: %s \n\
-BLOCKS: %s \n\
-SYNCED: %s \n\
+TYPE: %s
+VERSION: %s
+MN STATUS: %s
+HASH: %s
+BLOCKS: %s
+SYNCED: %s
 " "$type" "$ver" "$mn_status" "$hash" "$block_count" "$sync_status"

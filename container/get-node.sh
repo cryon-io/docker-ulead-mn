@@ -48,5 +48,8 @@ case "$URL" in
     ;;
 esac
 
-cp -f "$(find . -name uleadd)" . 2>/dev/null || exit 0
-cp -f "$(find . -name ulead-cli)" . 2>/dev/null || exit 0
+cp -f "$(find . -name uleadd)" . 2>/dev/null
+cp -f "$(find . -name ulead-cli)" . 2>/dev/null
+
+printf "%s" "$(printf "%s" "$GIT_INFO" | jq .tag_name -r | sed 's\v\\')" > ./version
+exit 0

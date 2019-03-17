@@ -18,6 +18,4 @@
 #
 #  Contact: cryi@tutanota.com
 
-ver=$(uleadd -version | grep "ULead Core Daemon version v" | sed "s/ULead Core Daemon version v//" |  sed "s/-.*//")
-
-printf "%s" "$ver"
+cat ./version

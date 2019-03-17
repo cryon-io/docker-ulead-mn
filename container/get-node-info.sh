@@ -26,7 +26,7 @@ if printf "%s" "$mn_status" | grep "error:"; then
 else 
     mn_status=$(printf "%s" "$mn_status" | jq .message)
 fi
-hash=$(cat ./node.hash)
+
 block_count="$(/home/ulead/ulead-cli getblockchaininfo 2>&1)"
 if printf "%s" "$block_count" | grep "error:"; then 
     block_count=$(printf "%s" "$block_count" | sed 's\error: \\g' | jq .message)   
@@ -44,16 +44,14 @@ printf "\
 TYPE: %s
 VERSION: %s
 MN STATUS: %s
-HASH: %s
 BLOCKS: %s
 SYNCED: %s
-" "$type" "$ver" "$mn_status" "$hash" "$block_count" "$sync_status"> /home/ulead/.ulead/node.info
+" "$type" "$ver" "$mn_status" "$block_count" "$sync_status"> /home/ulead/.ulead/node.info
 
 printf "\
 TYPE: %s
 VERSION: %s
 MN STATUS: %s
-HASH: %s
 BLOCKS: %s
 SYNCED: %s
-" "$type" "$ver" "$mn_status" "$hash" "$block_count" "$sync_status"
+" "$type" "$ver" "$mn_status" "$block_count" "$sync_status"

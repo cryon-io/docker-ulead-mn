@@ -1,9 +1,10 @@
 {
-    "version" : 0.211,
+    "version" : 0.22,
     "update-node": "tools/update-node.sh",
     "fs-permissions": "tools/fs-permissions.sh",
     "node-info": "tools/node-info.sh",
     "set-param": "tools/set-param.sh",
+    "before-start": "tools/before-start.sh",
     "cli" : "ulead-cli",
     "required-ans-version" : 0
 }

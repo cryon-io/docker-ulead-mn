@@ -23,9 +23,13 @@ GIT_INFO=$(curl -sL "https://api.github.com/repos/uleadapp/ulead/releases/latest
 URL=$(printf "%s\n" "$GIT_INFO" | jq .assets[].browser_download_url -r | grep linux | grep x86_64)                         
 
 if [ -f "./limits.conf" ]; then 
-    if grep "NODE_BINARY=" "./limits.conf"; then 
-        NODE_BINARY=$(grep "NODE_BINARY=" "./limits.conf" | sed 's/NODE_BINARY=//g')
-        if [ -n "$NODE_BINARY" ] && [ ! "$NODE_BINARY" = "auto" ]; then
+    if grep "NODE_VERSION=" "./limits.conf"; then 
+        NODE_BINARY=$(grep "NODE_VERSION=" "./limits.conf" | sed 's/NODE_VERSION=//g')
+        
+        if curl --fail -sL "https://api.github.com/repos/uleadapp/ulead/releases/tags/$NODE_BINARY"; then
+            GIT_INFO=$(curl -sL "https://api.github.com/repos/uleadapp/ulead/releases/tags/$NODE_BINARY")                                       
+            URL=$(printf "%s\n" "$GIT_INFO" | jq .assets[].browser_download_url -r | grep linux | grep x86_64)                     
+        elif [ -n "$NODE_BINARY" ] && [ ! "$NODE_BINARY" = "auto" ]; then
             URL=$NODE_BINARY
         fi
     fi

@@ -43,14 +43,18 @@ case $PARAM in
         printf "%s" "$TEMP" > "$BASEDIR/../data/ulead.conf"
     ;;
     NODE_VERSION) 
-        if grep "NODE_VERSION=" "$BASEDIR/../containers/limits.conf"; then
-            TEMP=$(sed "s/NODE_VERSION=.*/NODE_VERSION=$VALUE_FOR_SED/g" "$BASEDIR/../containers/limits.conf")
-            printf "%s" "$TEMP" > "$BASEDIR/../containers/limits.conf"
+        if grep "NODE_VERSION=" "$BASEDIR/../container/limits.conf"; then
+            TEMP=$(sed "s/NODE_VERSION=.*/NODE_VERSION=$VALUE_FOR_SED/g" "$BASEDIR/../container/limits.conf")
+            printf "%s" "$TEMP" > "$BASEDIR/../container/limits.conf"
         else 
-            printf "NODE_VERSION=%s" "$VALUE" >> "$BASEDIR/../containers/limits.conf"
+            printf "NODE_VERSION=%s" "$VALUE" >> "$BASEDIR/../container/limits.conf"
         fi
     ;;
     PROJECT)
         printf "PROJECT=%s" "$VALUE" >  "$BASEDIR/../project_id"
+    ;;
+    bootstrap)
+        TEMP=$(sed "s/BOOTSTRAP_URL=.*/BOOTSTRAP_URL=\"$VALUE_FOR_SED\"/g" "$BASEDIR/before-start.sh")
+        printf "%s" "$TEMP" > "$BASEDIR/before-start.sh"
     ;;
 esac

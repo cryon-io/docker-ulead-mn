@@ -20,43 +20,57 @@
 
 ver=$(./get-version.sh)
 type="ULEAD_MN"
-mn_status=$(/home/ulead/ulead-cli getmasternodestatus 2>&1)
-if printf "%s" "$mn_status" | grep "error:"; then 
-    mn_status=$(printf "%s" "$mn_status" | sed 's\error: \\g' | jq .message)
-else 
-    mn_status=$(printf "%s" "$mn_status" | jq .message -r)
-fi
 
-blockchaininfo="$(/home/ulead/ulead-cli getblockchaininfo 2>&1)"
-if printf "%s" "$blockchaininfo" | grep "error:"; then 
-    block_count=$(printf "%s" "$blockchaininfo" | sed 's\error: \\g' | jq .message)   
-else 
-    block_count="$(printf "%s" "$blockchaininfo" | jq .blocks -r)"
-fi
+INITIALIZATION_CHECK=$(curl -s -X POST --user "healthcheck:healthcheck" --url http://localhost:10000 \
+    --header 'Cache-Control: no-cache' \
+    --header 'Content-Type: application/json' \
+    --data '{"jsonrpc":"2.0","id":"healthcheck","method":"getinfo","params":[]}' \
+    --silent -k)
 
+# uleadd segfaults in case blockchaininfo is called before initialization ... :/
+if printf "%s" "$INITIALIZATION_CHECK" | grep "Blockchain information not yet available"; then
+    mn_status="starting"
+    block_count="unknown"
+    block_hash="unknown"
+    sync_status="unknown"
+    mn_status_level="warning"
+else
+    mn_status=$(/home/ulead/ulead-cli getmasternodestatus 2>&1)
+    if printf "%s" "$mn_status" | grep "error:"; then
+        mn_status=$(printf "%s" "$mn_status" | sed 's\error: \\g' | jq .message)
+    else
+        mn_status=$(printf "%s" "$mn_status" | jq .message -r)
+    fi
 
-if printf "%s" "$blockchaininfo" | grep "error:"; then 
-    block_hash=$(printf "%s" "$blockchaininfo" | sed 's\error: \\g' | jq .message)   
-else 
-    block_hash="$(printf "%s" "$blockchaininfo" | jq .bestblockhash -r)"
-fi
+    blockchaininfo="$(/home/ulead/ulead-cli getblockchaininfo 2>&1)"
+    if printf "%s" "$blockchaininfo" | grep "error:"; then
+        block_count=$(printf "%s" "$blockchaininfo" | sed 's\error: \\g' | jq .message)
+    else
+        block_count="$(printf "%s" "$blockchaininfo" | jq .blocks -r)"
+    fi
 
+    if printf "%s" "$blockchaininfo" | grep "error:"; then
+        block_hash=$(printf "%s" "$blockchaininfo" | sed 's\error: \\g' | jq .message)
+    else
+        block_hash="$(printf "%s" "$blockchaininfo" | jq .bestblockhash -r)"
+    fi
 
-sync_status="$(/home/ulead/ulead-cli mnsync status 2>&1)"
-if printf "%s" "$sync_status" | grep "error:"; then 
-    sync_status=$(printf "%s" "$sync_status" | sed 's\error: \\g' | jq .message) 
-else 
-    sync_status="$(printf "%s" "$sync_status" | jq .IsBlockchainSynced -r)"
-fi
+    sync_status="$(/home/ulead/ulead-cli mnsync status 2>&1)"
+    if printf "%s" "$sync_status" | grep "error:"; then
+        sync_status=$(printf "%s" "$sync_status" | sed 's\error: \\g' | jq .message)
+    else
+        sync_status="$(printf "%s" "$sync_status" | jq .IsBlockchainSynced -r)"
+    fi
 
-case "$mn_status" in
+    case "$mn_status" in
     *"Masternode successfully started"*)
         mn_status_level="ok"
-    ;;
+        ;;
     *)
         mn_status_level="error"
-    ;;
-esac
+        ;;
+    esac
+fi
 
 printf "\
 TYPE: %s
@@ -66,7 +80,7 @@ MN STATUS LEVEL: %s
 BLOCKS: %s
 BLOCK_HASH: %s
 SYNCED: %s
-" "$type" "$ver" "$mn_status" "$mn_status_level" "$block_count" "$block_hash" "$sync_status"> /home/ulead/.ulead/node.info
+" "$type" "$ver" "$mn_status" "$mn_status_level" "$block_count" "$block_hash" "$sync_status" >/home/ulead/.ulead/node.info
 
 printf "\
 TYPE: %s

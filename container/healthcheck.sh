@@ -18,6 +18,17 @@
 #
 #  Contact: cryi@tutanota.com
 
+INITIALIZATION_CHECK=$(curl -s -X POST  --user "healthcheck:healthcheck" --url http://localhost:10000 \
+                                        --header 'Cache-Control: no-cache' \
+                                        --header 'Content-Type: application/json' \
+                                        --data '{"jsonrpc":"2.0","id":"healthcheck","method":"getinfo","params":[]}' \
+                                        --silent -k)
+
+# uleadd segfaults in case blockchaininfo is called before initialization ... :/
+if printf "%s" "$INITIALIZATION_CHECK" | grep "Blockchain information not yet available"; then
+    exit 0
+fi
+
 RESULT=$(curl -s -X POST -w "\n%{http_code}\n" --user "healthcheck:healthcheck" --url http://localhost:10000 \
                                         --header 'Cache-Control: no-cache' \
                                         --header 'Content-Type: application/json' \
